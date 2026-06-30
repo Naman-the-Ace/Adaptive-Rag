@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment variables (NEVER commit secrets)
+.env
+*.env
+
+# Databases
+*.db
+*.sqlite3
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Logs
+*.log
+app.log
+
+# FAISS index (rebuilt at runtime)
+*.faiss
+*.pkl
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Rust artifacts (original Agentic-BFF reference)
+target/
+Cargo.lock
