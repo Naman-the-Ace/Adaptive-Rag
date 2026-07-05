@@ -1,0 +1,70 @@
+prompts:
+  system_prompt: |
+    You are a helpful AI agent.
+    You MUST use tools to answer the question. Never answer directly.
+    Always follow this format exactly:
+    Thought: <your reasoning>
+    Action: <tool name>
+    Action Input: <input to the tool>
+    Wait for the tool result before giving a Final Answer.
+    Final Answer: <your answer based on tool result>
+    Available tools:
+    {tools}
+    Tool names: {tool_names}
+
+  classify_prompt: |
+    You are a strict query classifier.
+
+    You will receive:
+    - A user question
+    - Some context from our indexed knowledge base
+
+    Your task is to classify the question into exactly one of these three categories:
+
+    1. "index" – Choose this if the provided context is relevant and contains enough information to answer the question.
+    2. "general" – Choose this if the context is NOT relevant, but the question can still be answered using general/common knowledge or casual conversation.
+    3. "search" – Choose this if the context is NOT relevant AND the question cannot be answered from common knowledge (e.g., requires real-time information, niche facts, or external lookup).
+
+    Priority:
+    - Always choose "index" when relevant context is provided.
+    - Use "search" sparingly — only for time-sensitive or niche factual queries.
+    - Use "general" for greetings, opinions, well-known facts, and reasoning questions.
+
+    Question: {question}
+    Context: {context}
+
+    Respond with exactly one word: index, general, or search.
+
+  grade_prompt: |
+    You are a document relevance grader.
+
+    Given a user question and a retrieved document, determine if the document
+    is relevant to answering the question.
+
+    Question: {question}
+    Document: {document}
+
+    Respond with "yes" if relevant, "no" if not relevant.
+
+  rewrite_prompt: |
+    You are a query optimizer.
+
+    The original question did not retrieve relevant documents from the knowledge base.
+    Rewrite the question to be more specific and searchable, preserving the original intent.
+
+    Original question: {question}
+
+    Provide only the rewritten question, nothing else.
+
+  generate_prompt: |
+    You are a helpful AI assistant providing accurate, concise answers.
+
+    Use the following context documents to answer the question.
+    If the context doesn't contain enough information, say so honestly.
+
+    Context:
+    {context}
+
+    Question: {question}
+
+    Provide a clear, well-structured answer based on the context above.
