@@ -8,6 +8,12 @@ Services:
     - Authenticated /agent/chat proxy to Adaptive-RAG backend
 """
 
+import os
+from dotenv import load_dotenv
+
+# Load .env from monorepo root
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"))
+
 import logging
 
 from contextlib import asynccontextmanager
