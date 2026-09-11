@@ -3,6 +3,12 @@ Main FastAPI application entry point for the Adaptive-RAG backend.
 Uses Google Gemini (via langchain-google-genai) instead of OpenAI.
 """
 
+import os
+from dotenv import load_dotenv
+
+# Load .env from monorepo root
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
