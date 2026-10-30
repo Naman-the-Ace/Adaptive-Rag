@@ -131,7 +131,7 @@ Adaptive-Rag/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/itsmehotpants/Adaptive-Rag.git
+git clone https://github.com/Naman-the-Ace/Adaptive-Rag.git
 cd Adaptive-Rag
 ```
 
@@ -201,7 +201,7 @@ Frontend at: `http://localhost:8501`
 
 1. Push your code to GitHub (already done).
 2. Go to [share.streamlit.io](https://share.streamlit.io).
-3. Click **New app** → Select `itsmehotpants/Adaptive-Rag`.
+3. Click **New app** → Select `Naman-the-Ace/Adaptive-Rag`.
 4. Set **Main file path**: `adaptive_rag/streamlit_app/Home.py`
 5. Under **Advanced → Secrets**, add:
    ```toml
@@ -215,7 +215,7 @@ Frontend at: `http://localhost:8501`
 #### Deploy Auth Service
 
 1. Go to [render.com](https://render.com) → **New Web Service**.
-2. Connect GitHub repo → Select `itsmehotpants/Adaptive-Rag`.
+2. Connect GitHub repo → Select `Naman-the-Ace/Adaptive-Rag`.
 3. Settings:
    - **Root Directory**: `auth_service`
    - **Build Command**: `pip install -r requirements.txt`
@@ -290,4 +290,4 @@ railway up
 
 ## 📝 License
 
-MIT © 2024 itsmehotpants
+MIT © 2024 Naman-the-Ace
