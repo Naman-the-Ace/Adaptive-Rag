@@ -1,0 +1,44 @@
+# ── Adaptive RAG Evaluation Configuration ─────────────────────────────────────
+# Modify these settings without touching the evaluation scripts.
+
+dataset:
+  golden_dataset_path: "evaluation/datasets/golden_dataset.jsonl"
+  sample_size: null          # null = use all samples; integer = subsample
+  doc_route_label: "index"
+  general_route_label: "general"
+  search_route_label: "search"
+
+retrieval:
+  k_values: [3, 5, 10]       # Evaluate at these K values
+  default_k: 4               # Must match retriever_setup.py get_retriever() k
+  configs:                   # Named retrieval configurations to compare
+    - name: "baseline"
+      query_rewriting: false
+      description: "Default pipeline with k=4, no rewriting override"
+    - name: "with_rewriting"
+      query_rewriting: true
+      description: "Force query rewriting before retrieval"
+
+generation:
+  enabled: true              # Set false to skip expensive LLM-as-judge calls
+  sample_size: 20            # Number of queries to run generation eval on
+  evaluator_model: null      # null = use same model as the app (Groq/Gemini)
+  faithfulness_threshold: 0.7
+  relevancy_threshold: 0.7
+
+latency:
+  warmup_runs: 2             # Throw away first N runs (cold start)
+  measurement_runs: 10       # Runs to measure
+  include_web_search: false  # Web search latency varies; skip by default
+
+routing:
+  eval_all_routes: true
+
+reporting:
+  output_dir: "evaluation/reports"
+  plots_dir: "evaluation/plots"
+  csv_delimiter: ","
+
+logging:
+  level: "INFO"
+  log_file: "evaluation/reports/eval_run.log"

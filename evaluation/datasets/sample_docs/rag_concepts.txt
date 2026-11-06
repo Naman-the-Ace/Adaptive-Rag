@@ -1,0 +1,172 @@
+# Adaptive RAG: Concepts and Architecture Reference
+
+## Chapter 1: Introduction to Retrieval-Augmented Generation (RAG)
+
+Retrieval-Augmented Generation (RAG) is a technique that combines a retrieval system with a language model generator. Instead of relying solely on the LLM's internal parametric knowledge, RAG retrieves relevant documents from an external knowledge base and provides them as context to the LLM during generation. This grounds the LLM response in factual evidence, reducing hallucination and enabling the model to answer questions about private or recent information.
+
+The main components of a RAG pipeline are:
+1. Document ingestion and chunking
+2. Embedding model for vectorization
+3. Vector store for similarity search and retrieval
+4. A retrieval module to fetch top-K documents
+5. A language model for context-aware generation
+
+## Chapter 2: Vector Embeddings
+
+Vector embeddings are dense numerical representations of text in a high-dimensional space. Semantically similar texts are placed closer together in this space, enabling mathematical comparison of meaning. Embedding models like all-MiniLM-L6-v2 (HuggingFace) and text-embedding-004 (Google Gemini) convert text into fixed-length vectors.
+
+Cosine similarity is the standard metric for comparing embeddings. It measures the angle between two vectors, returning 1 for identical directions and 0 for perpendicular. Semantic search uses cosine similarity to rank documents by relevance to a query.
+
+The difference between dense retrieval and sparse retrieval:
+- Dense retrieval: Uses neural embeddings and approximate nearest neighbor search. Good for semantic similarity, paraphrases, and concept matching.
+- Sparse retrieval: Uses inverted indexes and term-frequency methods like BM25. Good for exact keyword matching. Traditional search engines rely on sparse retrieval.
+
+## Chapter 3: FAISS Vector Store
+
+FAISS (Facebook AI Similarity Search) is an efficient library for similarity search over dense vectors. It supports multiple index types:
+- Flat index: Exact brute-force search, most accurate but slow for large datasets.
+- IVF (Inverted File Index): Clusters vectors into groups, search only nearby clusters.
+- HNSW (Hierarchical Navigable Small World): Graph-based approximate nearest neighbor search, fast and accurate.
+
+The FAISS index in this Adaptive RAG system is held in-memory. The index is populated when documents are uploaded via the API. This means the index is lost on server restart and documents must be re-uploaded.
+
+The retriever uses k=4 as the default number of results.
+
+## Chapter 4: Document Chunking
+
+Chunking splits large documents into smaller pieces that fit within the embedding model's context window and allow more precise retrieval. The system uses RecursiveCharacterTextSplitter with:
+- Chunk size: 1000 characters
+- Chunk overlap: 200 characters
+
+The overlap ensures that context spanning chunk boundaries is not completely lost. RecursiveCharacterTextSplitter tries multiple separators in order: paragraph breaks, newlines, spaces, and finally individual characters.
+
+The file formats supported are PDF (using PyPDFLoader) and plain text (using TextLoader). Files are detected by their extension.
+
+## Chapter 5: LangGraph and Adaptive Routing
+
+LangGraph is a framework for building stateful, multi-step LLM workflows as directed graphs. Each node is a Python function that transforms the shared state. Conditional edges allow dynamic routing based on the current state.
+
+The Adaptive RAG system uses LangGraph with the following flow:
+
+START → query_classifier
+  → [index route] retrieve_docs → grade_docs
+    → [relevant] generate_answer → END
+    → [irrelevant] rewrite_query → web_search → generate_answer → END
+  → [general route] general_llm_answer → END
+  → [search route] web_search → generate_answer → END
+
+The query classifier uses an LLM with structured output (Pydantic schema) to decide the route. It performs a preliminary retrieval at classification time to give the LLM context for the routing decision.
+
+The three routes are:
+- index: Use when retrieved context from the vector store is relevant to the query
+- general: Use when the question can be answered from general/common knowledge
+- search: Use when the question requires real-time or niche information not in the index
+
+## Chapter 6: Document Relevance Grading
+
+After retrieving documents, each chunk is scored for relevance using an LLM grader. The grade_prompt asks the LLM to return "yes" if the document is relevant to the question, "no" otherwise. Only documents graded "yes" are passed to the generation step.
+
+If all retrieved documents are graded irrelevant, the system triggers query rewriting. The rewritten query is then sent to web search rather than the vector store.
+
+## Chapter 7: Query Rewriting
+
+When the original query fails to retrieve relevant documents, the rewrite_query node uses an LLM to reformulate the question. The rewrite_prompt instructs the model to make the question more specific and searchable while preserving the original intent.
+
+Query rewriting improves retrieval quality by:
+- Expanding abbreviations and acronyms
+- Adding domain-specific terminology
+- Making implicit assumptions explicit
+- Breaking complex multi-part questions into focused queries
+
+## Chapter 8: LLM Configuration
+
+The system supports multiple LLMs with an automatic fallback:
+- Primary: Groq llama-3.3-70b-versatile (fast inference, free tier available)
+- Fallback: Google Gemini gemini-2.0-flash (triggered if GROQ_API_KEY is not set)
+
+The LLM temperature is set to 0.1 for near-deterministic outputs in classification and grading tasks.
+
+Embedding models:
+- Primary: HuggingFace all-MiniLM-L6-v2 (local, CPU, zero cost)
+- Fallback: Google Gemini embedding model (requires GEMINI_API_KEY)
+
+## Chapter 9: Chat History with MongoDB
+
+Each user conversation is stored in MongoDB, keyed by a session_id. The ChatHistory class provides get_history() to retrieve past messages and add_message() to persist new ones. The conversation history is prepended to the LangGraph input state so the LLM maintains context across turns.
+
+## Chapter 10: Authentication
+
+The system uses JWT (JSON Web Token) based authentication via a separate FastAPI service. The auth service runs on port 8080, the RAG backend on port 8000, and the Streamlit frontend communicates with both. JWT tokens are validated per request via dependency injection in FastAPI.
+
+## Chapter 11: Evaluation Metrics
+
+### Retrieval Metrics
+- Precision@K: Fraction of top-K retrieved documents that are relevant
+- Recall@K: Fraction of all relevant documents that appear in the top-K results
+- Hit Rate@K: Percentage of queries with at least one relevant document in top-K
+- MRR (Mean Reciprocal Rank): Average reciprocal of the rank of the first relevant result
+- nDCG@K: Normalized Discounted Cumulative Gain, rewards relevant results ranked higher
+
+### Generation Metrics
+- Faithfulness: Are all claims in the answer supported by the retrieved context?
+- Answer Relevancy: Does the answer address the question?
+- Answer Correctness: Is the answer factually correct compared to the reference?
+- Context Precision: What fraction of retrieved context is actually relevant?
+- Context Recall: Does the retrieved context contain all information needed to answer?
+
+## Chapter 12: Latency Benchmarking
+
+Key latency components to measure:
+- Embedding generation: Time to convert text to vectors
+- FAISS retrieval: Time for similarity search
+- Query classification: LLM call latency for routing decision
+- Document grading: LLM call per document (scales with K)
+- Query rewriting: LLM call latency when triggered
+- LLM generation: Time for final answer generation
+- End-to-end: Total pipeline latency
+
+Latency statistics to report: mean, median (p50), p90, p95, p99, min, max.
+p95 is typically the most important for user experience as it captures tail latency.
+
+The difference between cold-start and warm-run latency:
+- Cold-start: First request; includes model loading and connection setup
+- Warm-run: Subsequent requests; connection pooling and model already loaded
+
+## Chapter 13: RAGAS Evaluation Framework
+
+RAGAS is an open-source framework specifically designed to evaluate RAG pipelines. It computes metrics using LLM-as-judge approaches:
+
+- Faithfulness: Decomposes the answer into atomic claims and verifies each against the context
+- Answer Relevancy: Generates reverse questions from the answer and checks if they match the original
+- Context Precision: Checks if relevant context chunks are ranked higher than irrelevant ones
+- Context Recall: Checks if all ground-truth answer components are present in the context
+
+RAGAS scores range from 0 to 1, with higher being better. Scores above 0.8 are generally considered good.
+
+## Chapter 14: Web Search Integration
+
+The Tavily tool is configured with max_results=3. It is invoked either:
+1. Directly when the query_classifier routes to "search"
+2. As a fallback when retrieve_docs + grade_docs produces no relevant documents
+
+Web search results are wrapped as LangChain Document objects with the URL as the source metadata. These documents are then passed to generate_answer the same way FAISS results are.
+
+## Chapter 15: Chunk Size and Retrieval Trade-offs
+
+Smaller chunks (500-500 chars):
+- More precise retrieval
+- May lose context spanning chunk boundaries
+- Higher number of chunks in the index
+
+Larger chunks (1500-2000 chars):
+- More context per retrieved chunk
+- May include irrelevant content in the same chunk
+- Fewer chunks, may miss fine-grained retrieval
+
+Overlap (200 chars) ensures that information at chunk boundaries appears in both adjacent chunks, reducing context fragmentation.
+
+Increasing K (top-K retrieved results):
+- Higher recall but lower precision
+- More context tokens consumed per request
+- Higher API costs if using per-token pricing
+- Document grader filters irrelevant chunks, so higher K is partially mitigated

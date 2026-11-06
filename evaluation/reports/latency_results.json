@@ -1,0 +1,44 @@
+{
+  "embedding_generation": {
+    "n": 10,
+    "mean": 0.1283,
+    "median": 0.1255,
+    "p90": 0.1643,
+    "p95": 0.2809,
+    "p99": 0.2809,
+    "min": 0.0603,
+    "max": 0.2809,
+    "stdev": 0.0649
+  },
+  "faiss_retrieval": {
+    "n": 10,
+    "mean": 0.0003,
+    "median": 0.0002,
+    "p90": 0.0006,
+    "p95": 0.0006,
+    "p99": 0.0006,
+    "min": 0.0002,
+    "max": 0.0006,
+    "stdev": 0.0002
+  },
+  "query_classification": {
+    "n": 0,
+    "note": "skipped via --skip-llm"
+  },
+  "document_grading": {
+    "n": 0,
+    "note": "skipped via --skip-llm"
+  },
+  "query_rewriting": {
+    "n": 0,
+    "note": "skipped via --skip-llm"
+  },
+  "llm_generation": {
+    "n": 0,
+    "note": "skipped via --skip-llm"
+  },
+  "end_to_end": {
+    "n": 0,
+    "note": "skipped via --skip-llm"
+  }
+}

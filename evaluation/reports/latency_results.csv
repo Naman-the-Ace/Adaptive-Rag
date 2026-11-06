@@ -1,0 +1,8 @@
+component,max,mean,median,min,n,note,p90,p95,p99,stdev
+embedding_generation,0.2809,0.1283,0.1255,0.0603,10,,0.1643,0.2809,0.2809,0.0649
+faiss_retrieval,0.0006,0.0003,0.0002,0.0002,10,,0.0006,0.0006,0.0006,0.0002
+query_classification,,,,,0,skipped via --skip-llm,,,,
+document_grading,,,,,0,skipped via --skip-llm,,,,
+query_rewriting,,,,,0,skipped via --skip-llm,,,,
+llm_generation,,,,,0,skipped via --skip-llm,,,,
+end_to_end,,,,,0,skipped via --skip-llm,,,,

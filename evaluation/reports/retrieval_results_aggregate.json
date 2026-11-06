@@ -1,0 +1,26 @@
+{
+  "n_queries": 42,
+  "mean_precision@3": 0.9524,
+  "mean_recall@3": 0.9524,
+  "mean_hit_rate@3": 0.9524,
+  "mean_ndcg@3": 0.9524,
+  "mean_precision@5": 0.9524,
+  "mean_recall@5": 0.9524,
+  "mean_hit_rate@5": 0.9524,
+  "mean_ndcg@5": 0.9524,
+  "mean_precision@10": 0.9524,
+  "mean_recall@10": 0.9524,
+  "mean_hit_rate@10": 0.9524,
+  "mean_ndcg@10": 0.9524,
+  "mean_mrr": 0.9524,
+  "mean_retrieval_latency_s": 0.0428,
+  "median_retrieval_latency_s": 0.0388,
+  "config": "baseline",
+  "k_values": [
+    3,
+    5,
+    10
+  ],
+  "query_rewriting_enabled": false,
+  "no_label_queries": 2
+}
